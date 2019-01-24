@@ -1,0 +1,32 @@
+---
+# tasks file for firewalld
+- name: install the latest version of Firewalld
+  yum:
+    name: firewalld
+    state: latest
+  become: true
+
+- name: Allow port 22 on firewalld rule for nginx
+  firewalld:
+    port: "{{ nginx_ssh_port }}/tcp"
+    permanent: true
+    state: enabled
+  become: true
+
+- name: Allow port 80 on firewalld rule for nginx
+  firewalld:
+    port: "{{ nginx_http_port }}/tcp"
+    permanent: true
+    state: enabled
+  become: true
+
+- name: Allow port 443 on firewalld rule for nginx
+  firewalld:
+    port: "{{ nginx_https_port }}/tcp"
+    permanent: true
+    state: enabled
+  become: true
+
+#force all handlers to run  
+- meta: flush_handlers
+

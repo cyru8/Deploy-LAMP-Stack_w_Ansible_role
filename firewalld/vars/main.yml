@@ -1,0 +1,6 @@
+---
+# vars file for firewalld
+nginx_ssh_port: 22
+nginx_http_port: 80
+nginx_https_port: 443
+

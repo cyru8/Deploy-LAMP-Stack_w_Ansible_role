@@ -1,0 +1,68 @@
+---
+#@See https://www.digitalocean.com/community/tutorials/how-to-automate-installing-wordpress-on-ubuntu-14-04-using-ansible
+##@See https://github.com/tucsonlabs/ansible-playbook-wordpress-nginx/blob/master/roles/wordpress/tasks/main.yml
+##@See https://opensourceforu.com/2017/05/devops-series-ansible-deployment-lamp-wordpress/
+
+- name: Update the software package repository
+  yum:
+    update_cache: yes
+
+- name: Create downloads directory
+  file:
+    path: "/home/{{ ansible_user }}/Downloads"
+    state: directory
+
+- name: Create target directory
+  file:
+    path: "{{ wordpress_final_dest }}/wordpress"
+    state: directory
+
+#Firewall: Use the firewalld module to open up ports for HTTP and HTTPS
+- firewalld: service=http permanent=true state=enabled
+- firewalld: service=https permanent=true state=enabled
+
+- name: Download Latest WordPress
+  get_url: url=http://wordpress.org/latest.tar.gz dest=/root/latest.tar.gz
+
+#- name: Copy WordPress tar.gz file to remote Servers and Unarchive and Copy to /var/www Directory
+- copy: src=latest.tar.gz dest=/tmp owner=root group=root
+- unarchive: src=/tmp/latest.tar.gz dest=/usr/share/nginx/html/ remote_src=yes
+
+- name: Copy sample config file
+  command: mv /usr/share/nginx/html/wordpress/wp-config-sample.php /usr/share/nginx/html/wordpress/wp-config.php creates=/usr/share/nginx/html/wordpress/wp-config.php
+  become: true 
+
+- name: Copy the default.conf to /etc/nginx/conf.d/default.conf
+  copy:
+    src: default.conf
+    dest: /etc/nginx/conf.d/default.conf
+  become: true
+
+- name: Copy the default.conf to /etc/nginx/nginx.conf
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  become: true
+
+- name: Fetch random salts for WordPress config
+  local_action: command curl https://api.wordpress.org/secret-key/1.1/salt/
+  register: "wp_salt"
+  become: no
+
+- name: Update WordPress config file
+  lineinfile:
+    dest=/usr/share/nginx/html/wordpress/wp-config.php
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{wordpress_db}}');"}        
+    - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{mysql_user}}');"}        
+    - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{mysql_user_passwd}}');"}
+  become: true
+
+- name:  create a directory if it doesn't exist
+  file: path=/usr/share/nginx/html/wp-content/uploads state=directory
+- file: dest=/usr/share/nginx/html/ owner=nginx group=nginx recurse=yes
+
+# Force all Handlers to run
+- meta: flush_handlers

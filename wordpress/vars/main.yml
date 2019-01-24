@@ -1,0 +1,16 @@
+---
+# vars file for wordpress
+ansible_user: oadetiba
+wordpress_file: "/tmp/"
+wordpress_extracted_file: "/usr/local/bin/"
+wordpress_final_dest: "/var/www/html"
+wp_version: latest
+mysql_root_user: root
+mysql_root_passwd: Password!23
+mysql_user: test_user
+mysql_user_passwd: Password!23
+ansible_hostname: labtest.techpro.int
+wordpress_db: wordpress
+server_hostname: labtest.techpro.int
+auto_up_disable: true
+core_update_level: true

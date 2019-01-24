@@ -1,0 +1,33 @@
+---
+# handlers file for wordpress
+# @See https://github.com/tucsonlabs/ansible-playbook-wordpress-nginx/tree/master/roles
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+
+- name: restart mysqld
+  service:
+    name: myqsld
+    state: restarted
+  become: true
+
+- name: restart php-fmp
+  service:
+    name: php-fpm
+    state: restarted
+  become: true
+
+- name: firewalld
+  service:
+    name: firewalld
+    state: restarted
+  become: true
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+

@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+#@see https://github.com/chusiang/php7.ansible.role/blob/master/tasks/verify.yml
+---
+
+- name: Check php-fpm process
+  shell: ps -A | grep php-fpm
+  register: php_process
+  changed_when: false
+
+- name: Print php-fpm process
+  debug:
+    msg: "{{ php_process.stdout_lines }}"
+
+# vim: ft=yaml.ansible :
